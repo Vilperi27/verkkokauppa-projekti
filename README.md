@@ -1,0 +1,2 @@
+# verkkokauppa-projekti
+ työharjoittelu
