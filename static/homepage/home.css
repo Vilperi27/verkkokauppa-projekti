@@ -1,0 +1,29 @@
+body{
+    background-color:darkgrey;
+}
+
+h1{
+    margin: auto;
+    text-align: center;
+    padding: 10px;
+    padding-bottom: 50px;
+}
+
+div.productlisting {
+    
+    background-color: rgb(134, 150, 155);
+    width: 1200px;
+    height: 500px;
+    margin: auto;
+    overflow: visible;
+    
+}
+
+div.product {
+    align-self: center;
+    margin: auto;
+    padding: 5px;
+    background-color: rgb(223, 238, 243);
+    width: 400px;
+    height: 150px;
+}

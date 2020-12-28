@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Verkko-verkkokauppa</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> 
+</head>
+<body>
+<div class="container">
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Product ID</th>
+		<th>Product name</th>
+		<th>Product description</th>
+		<th>Product image link</th>
+		<th>Product tags</th>
+      </tr>
+    </thead>
+    <tbody>
+	{% for prod in product %}  
+      <tr>
+        <td>{{prod.id}}</td>
+        <td>{{prod.product_name}}</td>
+		<td>{{prod.product_description}}</td>
+		<td>{{prod.product_image}}</td>
+		<td>{{prod.product_tags}}</td>
+      </tr>
+	  {% endfor %} 
+	</tbody>
+</table>	
+</div>
+</body>
+</html>
