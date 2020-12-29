@@ -8,25 +8,29 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> 
 </head>
 <body>
-<div class="container">
-<table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Product ID</th>
-		<th>Product name</th>
-		<th>Product description</th>
-		<th>Product image link</th>
-		<th>Product tags</th>
-      </tr>
-    </thead>
+  <div class="topnav" align="center" style="padding-top: 10px;">
+    <input action= "{% url 'search' %}" type="text" placeholder="Etsi.." method="post" id="searchterm">
+  </div>
+  <div class="container">
+  <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Tuotekoodi</th>
+          <th>Nimi</th>
+          <th>Tuoteselostus</th>
+          <th></th>
+          <th>Hinta</th>
+        </tr>
+      </thead>
     <tbody>
 	{% for prod in product %}  
       <tr>
         <td>{{prod.id}}</td>
         <td>{{prod.product_name}}</td>
-		<td>{{prod.product_description}}</td>
-		<td>{{prod.product_image}}</td>
-		<td>{{prod.product_tags}}</td>
+        <td>{{prod.product_description}}</td>
+        <td><img src={{prod.product_image}} alt="Italian Trulli" width="80%" height="80%"></td>
+        <td>{{prod.product_price}}€</td>
+        <td><button type="button">Lisää ostoskoriin</button></td>
       </tr>
 	  {% endfor %} 
 	</tbody>

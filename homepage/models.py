@@ -5,5 +5,4 @@ class Tuote(models.Model):
     product_name = models.CharField(max_length=150)
     product_description = models.CharField(max_length=1000)
     product_image = models.CharField(max_length=2000)
-    product_tags = models.CharField(max_length=2000, default='')
-    
+    product_price = models.DecimalField(max_digits=65, decimal_places=2, default=0)
