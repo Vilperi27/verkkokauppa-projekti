@@ -8,6 +8,7 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> 
 </head>
 <body>
+  <a href="/">Etusivu</a>
   <div class="topnav" align="center" style="padding-top: 10px;">
     <form method="POST" action=""> {% csrf_token %}
       <input type="search" name="search"> 
@@ -16,9 +17,9 @@
   </div>
   <div class="sortoptions" align="center">
       Järjestä: 
-      <a href="/id" name="reverse">Tuotekoodi</a>
-      <a href="/name" name="reverse">Nimi</a>
-      <a href="/price" name="reverse">Hinta</a>
+      <a href="/id">Tuotekoodi</a>
+      <a href="/name">Nimi</a>
+      <a href="/price">Hinta</a>
   </div>
   <div class="container">
   <table class="table table-striped" <>
@@ -45,5 +46,135 @@
 	</tbody>
 </table>	
 </div>
+
+<script>
+
+  const CART = {
+    KEY: 'sdfvklnsdfojnkwerjasdd',
+    contents: [],
+
+    init(){
+      let _contents = localStorage.getItem(CART.KEY);
+      
+      if(_contents){
+        CART.contents = JSON.parse(_contents);
+      }
+      else
+      {
+        CART.contents = [];
+      }
+    },
+    
+    async sync(){
+      let _cart = JSON.stringify(CART.contents);
+      await localStorage.setItem(CART.KEY, _cart);
+    },
+
+    find(id){
+      let match = CART.contents.filter(item=>{
+        if(item.id == id) return true;
+      });
+      if(match && match[0]) return match[0];
+    },
+
+    add(id){
+      if(CART.find(id)){
+        CART.increase(id, 1);
+      }
+      else
+      {
+        let arr = PRODUCTS.filter(product=>{
+          if(product.id == id){
+            return true;
+          }
+        });
+
+        if(arr && arr[0]){
+          let obj = {
+            id: arr[0].id,
+            title: arr[0].title,
+            qty: 1,
+            itemPrice: arr[0].price
+          };
+
+          CART.contents.push(obj);
+          CART.sync();
+        }
+        else
+        {
+          console.error('Invalid product');
+        }
+      }
+    },
+
+    increase(id, qty=1){
+      CART.contents = CART.contents.map(item=>{
+        if(item.id === id)
+          item.qty = item.qty + qty;
+        return item;
+      });
+
+      CART.sync()
+    },
+
+    reduce(id, qty=1){
+      
+      CART.contents = CART.contents.map(item=>{
+        if(item.id === id)
+          item.qty = item.qty - qty;
+        return item;
+      });
+      CART.contents.forEach(async item=>{
+        if(item.id === id && item.qty === 0)
+          CART.remove(id);
+      });
+
+      CART.sync()
+    },
+
+    remove(id){
+      CART.contents = CART.contents.filter(item=>{
+        if(item.id !== id)
+          return true;
+      });
+
+      CART.sync()
+    },
+
+    empty(){
+      CART.contents = [];
+      CART.sync()
+    },
+
+    sort(field='title'){
+      let sorted = CART.contents.sort((a, b)=>{
+        if(a[field] > b[field])
+        {
+          return 1;
+        }
+        else if(a[field]< a[field]){
+          return -1;
+        }
+        else
+        {
+          return 0;
+        }
+      });
+      return sorted;
+    }
+  };
+
+  let PRODUCTS = [];
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+      getProducts(showProducts, errorMessage);
+      CART.init();
+      showCart();
+  });
+
+
+
+</script>
+
 </body>
 </html>
