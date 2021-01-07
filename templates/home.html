@@ -40,7 +40,10 @@
         <td>{{prod.product_description}}</td>
         <td><img src={{prod.product_image}} alt="Italian Trulli" width="150px" height="150px"></td>
         <td>{{prod.product_price}}€</td>
-        <td><button type="button">Lisää ostoskoriin</button></td>
+        <td><button type="button" onclick="CART.add(
+          prod_id = '{{ prod.product_id }}', 
+          prod_name = '{{ prod.product_name }}', 
+          prod_image = '{{ prod.product_image }}')">Lisää ostoskoriin</button></td>
       </tr>
 	  {% endfor %} 
 	</tbody>
@@ -77,33 +80,25 @@
       if(match && match[0]) return match[0];
     },
 
-    add(id){
+    add(prod_id, prod_name, prod_image){
+      id = prod_id;
+
+      window.alert(id);
       if(CART.find(id)){
         CART.increase(id, 1);
       }
       else
       {
-        let arr = PRODUCTS.filter(product=>{
-          if(product.id == id){
-            return true;
-          }
-        });
+        
+        let obj = {
+          id: id,
+          qty: 1,
+          name: prod_name,
+          image: prod_image,
+        };
 
-        if(arr && arr[0]){
-          let obj = {
-            id: arr[0].id,
-            title: arr[0].title,
-            qty: 1,
-            itemPrice: arr[0].price
-          };
-
-          CART.contents.push(obj);
-          CART.sync();
-        }
-        else
-        {
-          console.error('Invalid product');
-        }
+        CART.contents.push(obj);
+        CART.sync();
       }
     },
 
@@ -167,11 +162,33 @@
   let PRODUCTS = [];
 
   document.addEventListener('DOMContentLoaded', ()=>{
-      getProducts(showProducts, errorMessage);
       CART.init();
       showCart();
   });
 
+  function showCart(){
+
+  }
+
+  function incrementCart(ev){
+
+  }
+
+  function decrementCart(ev){
+
+  }
+
+  function getProducts(success, failure){
+
+  }
+
+  function showProducts(products){
+
+  }
+
+  function addItem(ev){
+
+  }
 
 
 </script>
