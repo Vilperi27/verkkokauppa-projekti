@@ -15,8 +15,11 @@
       <button type="submit">Etsi..</button>
   </form>
   </div>
-  <div class="sortoptions" align="center">
-      Järjestä: 
+
+  <div id="shopping-cart" align= "right" style="padding-right: 100px;">
+  </div>
+
+  <div class="sortoptions" align="center">      Järjestä: 
       <a href="/id">Tuotekoodi</a>
       <a href="/name">Nimi</a>
       <a href="/price">Hinta</a>
@@ -43,7 +46,7 @@
         <td><button type="button" onclick="CART.add(
           prod_id = '{{ prod.product_id }}', 
           prod_name = '{{ prod.product_name }}', 
-          prod_image = '{{ prod.product_image }}')">Lisää ostoskoriin</button></td>
+          prod_image = '{{ prod.product_image }}')">Lisää ostoskoriin</button>
       </tr>
 	  {% endfor %} 
 	</tbody>
@@ -83,7 +86,6 @@
     add(prod_id, prod_name, prod_image){
       id = prod_id;
 
-      window.alert(id);
       if(CART.find(id)){
         CART.increase(id, 1);
       }
@@ -98,7 +100,36 @@
         };
 
         CART.contents.push(obj);
+
+
+        var image = document.createElement("img");
+        image.style = "width: 50px; height: 50px;";
+        image.src = prod_image;
+        document.getElementById("shopping-cart").appendChild(image);
+
+        var qty_elem = document.createElement("p");
+        qty_elem.textContent = obj.qty + "x ";
+        qty_elem.style = "display: inline;"
+        document.getElementById("shopping-cart").appendChild(qty_elem);
+
+        var name_elem = document.createElement("p");
+
+        if(prod_name.length > 20){
+          name_elem.textContent = prod_name.slice(0, 17) + "...";
+        }
+        else{
+            name_elem.textContent = prod_name.slice(0, 20);
+        }
+
+        name_elem.style = "display: inline; overflow: hidden;"
+        document.getElementById("shopping-cart").appendChild(name_elem);
+
+        var id_elem = document.createElement("p");
+        id_elem.textContent = prod_id;
+        document.getElementById("shopping-cart").appendChild(id_elem);
+
         CART.sync();
+
       }
     },
 
@@ -163,7 +194,6 @@
 
   document.addEventListener('DOMContentLoaded', ()=>{
       CART.init();
-      showCart();
   });
 
   function showCart(){
