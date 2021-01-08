@@ -8,7 +8,7 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> 
 </head>
 <body>
-  <a href="/">Etusivu</a>
+  <a href="/" style="padding-left: 40px;">Etusivu</a>
   <div class="topnav" align="center" style="padding-top: 10px;">
     <form method="POST" action=""> {% csrf_token %}
       <input type="search" name="search"> 
@@ -16,7 +16,8 @@
   </form>
   </div>
 
-  <div id="shopping-cart" align= "right" style="padding-right: 100px;">
+  <div id="shopping-cart" align= "right" style="right: 0%; padding-right: 100px; position: absolute;">
+  
   </div>
 
   <div class="sortoptions" align="center">      Järjestä: 
@@ -87,7 +88,7 @@
       id = prod_id;
 
       if(CART.find(id)){
-        CART.increase(id, 1);
+        CART.increase(id, 1);     
       }
       else
       {
@@ -100,43 +101,83 @@
         };
 
         CART.contents.push(obj);
+        
+        console.log("HERE");
 
-
-        var image = document.createElement("img");
-        image.style = "width: 50px; height: 50px;";
-        image.src = prod_image;
-        document.getElementById("shopping-cart").appendChild(image);
-
-        var qty_elem = document.createElement("p");
-        qty_elem.textContent = obj.qty + "x ";
-        qty_elem.style = "display: inline;"
-        document.getElementById("shopping-cart").appendChild(qty_elem);
-
-        var name_elem = document.createElement("p");
-
-        if(prod_name.length > 20){
-          name_elem.textContent = prod_name.slice(0, 17) + "...";
-        }
-        else{
-            name_elem.textContent = prod_name.slice(0, 20);
-        }
-
-        name_elem.style = "display: inline; overflow: hidden;"
-        document.getElementById("shopping-cart").appendChild(name_elem);
-
-        var id_elem = document.createElement("p");
-        id_elem.textContent = prod_id;
-        document.getElementById("shopping-cart").appendChild(id_elem);
+        CART.createItemElement(obj.qty, prod_id, prod_image, prod_name);
 
         CART.sync();
 
       }
+
+      console.log(CART.contents);
+    },
+
+    createItemElement(qty, prod_id, prod_image, prod_name){
+
+      if(!document.getElementById("empty_button")){
+        var price_elem = document.createElement("div");
+        var button_elem = document.createElement("button");
+        button_elem.setAttribute("onclick", "CART.empty()");
+        button_elem.textContent = "Tyhjennä";
+        button_elem.setAttribute("id", "empty_button");
+        button_elem.style = "width: 100px; height: 30px;";
+        document.getElementById("shopping-cart").appendChild(button_elem);
+      }
+
+      var div_elem = document.createElement("div");
+      div_elem.setAttribute("id", prod_id);
+      document.getElementById("shopping-cart").append(div_elem);
+
+      var image = document.createElement("img");
+      image.style = "width: 50px; height: 50px;";
+      image.src = prod_image;
+      document.getElementById(prod_id).appendChild(image);
+
+      var qty_elem = document.createElement("p");
+      var temp = "quantity" + prod_id;
+      qty_elem.setAttribute("id", temp);
+      qty_elem.textContent = qty;
+      qty_elem.style = "display: inline;"
+      document.getElementById(prod_id).appendChild(qty_elem);
+
+      var name_elem = document.createElement("p");
+
+      if(prod_name.length > 20){
+        name_elem.textContent = " " + prod_name.slice(0, 17) + "...";
+      }
+      else{
+          name_elem.textContent = " " + prod_name.slice(0, 20);
+      }
+
+      name_elem.style = "display: inline; overflow: hidden;"
+      document.getElementById(prod_id).appendChild(name_elem);
+
+      var id_elem = document.createElement("p");
+      id_elem.textContent = prod_id;
+      document.getElementById(prod_id).appendChild(id_elem);
+
+      var button_minus = document.createElement("button");
+      button_minus.setAttribute("onclick", "CART.reduce("+this.parentNode.id+")");
+      button_minus.textContent = "-";
+      button_minus.style = "margin-right: 5px";
+      document.getElementById(prod_id).appendChild(button_minus);
+      
+      var button_plus = document.createElement("button");
+      button_plus.setAttribute("onclick", "CART.increase("+this.parentNode.id+")");
+      button_plus.textContent = "+";
+      button_plus.style = "margin-left: 5px";
+      document.getElementById(prod_id).appendChild(button_plus);
+
+      return div_elem;
     },
 
     increase(id, qty=1){
       CART.contents = CART.contents.map(item=>{
-        if(item.id === id)
+        if(item.id === id){
           item.qty = item.qty + qty;
+          document.getElementById("quantity" + id).textContent = item.qty;
+        }
         return item;
       });
 
@@ -148,11 +189,18 @@
       CART.contents = CART.contents.map(item=>{
         if(item.id === id)
           item.qty = item.qty - qty;
+          document.getElementById("quantity" + id).textContent = item.qty;
         return item;
       });
       CART.contents.forEach(async item=>{
-        if(item.id === id && item.qty === 0)
+        if(item.id === id && item.qty === 0){
           CART.remove(id);
+          document.getElementById(id).remove();
+
+            if(document.getElementById("shopping-cart").childNodes.length < 2)
+              document.getElementById("shopping-cart").innerHTML = '';
+
+        }
       });
 
       CART.sync()
@@ -169,6 +217,7 @@
 
     empty(){
       CART.contents = [];
+      document.getElementById("shopping-cart").innerHTML = '';
       CART.sync()
     },
 
@@ -193,11 +242,21 @@
   let PRODUCTS = [];
 
   document.addEventListener('DOMContentLoaded', ()=>{
-      CART.init();
+    CART.init();
+    showCart();
   });
 
   function showCart(){
-
+    var cart_object = localStorage.getItem(CART.KEY);
+    var cart_parse = JSON.parse(cart_object);
+    try {
+      for (i = 0; i < cart_parse.length; i++) {
+        var item_elem = CART.createItemElement(cart_parse[i]["qty"], cart_parse[i]["id"], cart_parse[i]["image"], cart_parse[i]["name"])
+        document.getElementById("shopping-cart").appendChild(item_elem);
+      }      
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   function incrementCart(ev){
