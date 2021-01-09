@@ -15,15 +15,16 @@
       <button type="submit">Etsi..</button>
   </form>
   </div>
+  <div id="shopping-cart-empty" align= "right" style="right: 0%; padding-right: 100px; position: absolute;">
+  </div>
 
-  <div id="shopping-cart" align= "right" style="right: 0%; padding-right: 100px; position: absolute;">
-  
+  <div id="shopping-cart" align= "right" style="right: 0%; top: 15%; padding-right: 100px; position: absolute;">
   </div>
 
   <div class="sortoptions" align="center">      Järjestä: 
-      <a href="/id">Tuotekoodi</a>
-      <a href="/name">Nimi</a>
-      <a href="/price">Hinta</a>
+      <a href="/sort/ID">Tuotekoodi</a>
+      <a href="/sort/name">Nimi</a>
+      <a href="/sort/price">Hinta</a>
   </div>
   <div class="container">
   <table class="table table-striped" <>
@@ -37,6 +38,9 @@
         </tr>
       </thead>
     <tbody>
+      <!--
+        Iterate through the products and create a data-cell for each.
+      -->
 	{% for prod in product %}  
       <tr>
         <td>{{prod.product_id}}</td>
@@ -47,7 +51,8 @@
         <td><button type="button" onclick="CART.add(
           prod_id = '{{ prod.product_id }}', 
           prod_name = '{{ prod.product_name }}', 
-          prod_image = '{{ prod.product_image }}')">Lisää ostoskoriin</button>
+          prod_image = '{{ prod.product_image }}',
+          prod_price = '{{ prod.product_price }}')">Lisää ostoskoriin</button>
       </tr>
 	  {% endfor %} 
 	</tbody>
@@ -57,9 +62,14 @@
 <script>
 
   const CART = {
+
+    //Key for cart
     KEY: 'sdfvklnsdfojnkwerjasdd',
+
+    //Cart contents
     contents: [],
 
+    //Initialize the cart with the given key
     init(){
       let _contents = localStorage.getItem(CART.KEY);
       
@@ -72,11 +82,13 @@
       }
     },
     
+    //Sync changes with the cart and localstorage
     async sync(){
       let _cart = JSON.stringify(CART.contents);
       await localStorage.setItem(CART.KEY, _cart);
     },
 
+    //Find product via given ID
     find(id){
       let match = CART.contents.filter(item=>{
         if(item.id == id) return true;
@@ -84,7 +96,8 @@
       if(match && match[0]) return match[0];
     },
 
-    add(prod_id, prod_name, prod_image){
+    //Add to cart, if exists, add the quantity, otherwise create a visual element for the cart.
+    add(prod_id, prod_name, prod_image, prod_price){
       id = prod_id;
 
       if(CART.find(id)){
@@ -98,42 +111,58 @@
           qty: 1,
           name: prod_name,
           image: prod_image,
+          price: prod_price,
         };
 
         CART.contents.push(obj);
-        
-        console.log("HERE");
 
-        CART.createItemElement(obj.qty, prod_id, prod_image, prod_name);
+        CART.createItemElement(obj.qty, prod_id, prod_image, prod_name, prod_price);
 
         CART.sync();
 
+        var x = document.getElementById("total-price");
+        var r = parseFloat(
+          parseFloat(
+            x.textContent) + 
+            parseFloat(obj.price)).toFixed(2);
+        x.textContent = r;
+
       }
 
-      console.log(CART.contents);
+
     },
 
-    createItemElement(qty, prod_id, prod_image, prod_name){
+    //Creating the whole element within the cart, with each attribute and binding onclick events
+    createItemElement(qty, prod_id, prod_image, prod_name, prod_price){
 
+      //If empty_button doesn't exist, create one to clear the whole cart.
       if(!document.getElementById("empty_button")){
         var price_elem = document.createElement("div");
+        price_elem.textContent = "0"
+        price_elem.setAttribute("id", "total-price");
+        document.getElementById("shopping-cart-empty").appendChild(price_elem);
+
         var button_elem = document.createElement("button");
         button_elem.setAttribute("onclick", "CART.empty()");
         button_elem.textContent = "Tyhjennä";
         button_elem.setAttribute("id", "empty_button");
         button_elem.style = "width: 100px; height: 30px;";
-        document.getElementById("shopping-cart").appendChild(button_elem);
+        document.getElementById("shopping-cart-empty").appendChild(button_elem);
       }
 
+      //Creating the "item"-element which contains all the images, names, id etc.
+      //This is named by the ID to easily keep track of each item element.
       var div_elem = document.createElement("div");
       div_elem.setAttribute("id", prod_id);
       document.getElementById("shopping-cart").append(div_elem);
 
+      //Image for the item
       var image = document.createElement("img");
       image.style = "width: 50px; height: 50px;";
       image.src = prod_image;
       document.getElementById(prod_id).appendChild(image);
 
+      //Quantity paragraph for the item
       var qty_elem = document.createElement("p");
       var temp = "quantity" + prod_id;
       qty_elem.setAttribute("id", temp);
@@ -143,6 +172,7 @@
 
       var name_elem = document.createElement("p");
 
+      //If name is longer than 20, indicate that the name is hidden partially.
       if(prod_name.length > 20){
         name_elem.textContent = " " + prod_name.slice(0, 17) + "...";
       }
@@ -153,18 +183,21 @@
       name_elem.style = "display: inline; overflow: hidden;"
       document.getElementById(prod_id).appendChild(name_elem);
 
+      //Paragraph to show individual price and product ID
       var id_elem = document.createElement("p");
-      id_elem.textContent = prod_id;
+      id_elem.textContent = prod_price + "€ / kpl  |  Tuotekoodi: " + prod_id;
       document.getElementById(prod_id).appendChild(id_elem);
 
+      //Button to reduce the amount of products.
       var button_minus = document.createElement("button");
-      button_minus.setAttribute("onclick", "CART.reduce("+this.parentNode.id+")");
+      button_minus.setAttribute("onclick", "CART.reduce("+prod_id+", "+1+")");
       button_minus.textContent = "-";
       button_minus.style = "margin-right: 5px";
       document.getElementById(prod_id).appendChild(button_minus);
-      
+
+      //Button to increase the amount of products.
       var button_plus = document.createElement("button");
-      button_plus.setAttribute("onclick", "CART.increase("+this.parentNode.id+")");
+      button_plus.setAttribute("onclick", "CART.increase("+prod_id+", "+1+")");
       button_plus.textContent = "+";
       button_plus.style = "margin-left: 5px";
       document.getElementById(prod_id).appendChild(button_plus);
@@ -172,11 +205,19 @@
       return div_elem;
     },
 
+    //Maps all the contents in the cart and sees if the ID matches, if so, increase the qty by x
+    //default increase = 1
+    //Also replaces the total price on the HTML-template
     increase(id, qty=1){
       CART.contents = CART.contents.map(item=>{
-        if(item.id === id){
+
+        if(item.id == id){
           item.qty = item.qty + qty;
           document.getElementById("quantity" + id).textContent = item.qty;
+
+          var x = document.getElementById("total-price");
+          var r = parseFloat(parseFloat(x.textContent) + parseFloat(item.price)).toFixed(2);
+          x.textContent = r;
         }
         return item;
       });
@@ -184,102 +225,95 @@
       CART.sync()
     },
 
+    //Maps all the contents in the cart and sees if the ID matches, if so, decrease the qty by x
+    //default increase = 1
+    //Also replaces the total price on the HTML-template
     reduce(id, qty=1){
       
       CART.contents = CART.contents.map(item=>{
-        if(item.id === id)
+        if(item.id == id){
           item.qty = item.qty - qty;
           document.getElementById("quantity" + id).textContent = item.qty;
+          
+          var x = document.getElementById("total-price");
+          var r = parseFloat(parseFloat(x.textContent) - parseFloat(item.price)).toFixed(2);
+          x.textContent = r;
+        }
         return item;
       });
+      
+      //Iterates through the items, if the qty is reduced to 0, it will remove the object from
+      //cart and also removes the visual element from the shopping cart
       CART.contents.forEach(async item=>{
-        if(item.id === id && item.qty === 0){
+        if(item.id == id && item.qty == 0){
+          console.log("here");
           CART.remove(id);
           document.getElementById(id).remove();
-
-            if(document.getElementById("shopping-cart").childNodes.length < 2)
-              document.getElementById("shopping-cart").innerHTML = '';
-
+          
+          var elem = document.getElementById("shopping-cart");
+          if(elem.children.length == 0){
+            CART.empty();
+          }
         }
       });
 
       CART.sync()
     },
 
+    //Remove the item from shopping cart within localStorage
     remove(id){
       CART.contents = CART.contents.filter(item=>{
-        if(item.id !== id)
+        if(item.id != id)
           return true;
       });
 
       CART.sync()
     },
 
+    //Clears the whole shopping cart and all the visual elements within the shopping cart
     empty(){
       CART.contents = [];
       document.getElementById("shopping-cart").innerHTML = '';
+      document.getElementById("shopping-cart-empty").innerHTML = '';
       CART.sync()
     },
-
-    sort(field='title'){
-      let sorted = CART.contents.sort((a, b)=>{
-        if(a[field] > b[field])
-        {
-          return 1;
-        }
-        else if(a[field]< a[field]){
-          return -1;
-        }
-        else
-        {
-          return 0;
-        }
-      });
-      return sorted;
-    }
   };
 
   let PRODUCTS = [];
 
+  //Initializes the page when loaded
   document.addEventListener('DOMContentLoaded', ()=>{
     CART.init();
     showCart();
   });
 
+  //Displays the whole cart, creates required elements for products, which were saved
+  //within the localstorage.
   function showCart(){
     var cart_object = localStorage.getItem(CART.KEY);
     var cart_parse = JSON.parse(cart_object);
     try {
       for (i = 0; i < cart_parse.length; i++) {
-        var item_elem = CART.createItemElement(cart_parse[i]["qty"], cart_parse[i]["id"], cart_parse[i]["image"], cart_parse[i]["name"])
+        var item_elem = CART.createItemElement(
+          cart_parse[i]["qty"], 
+          cart_parse[i]["id"], 
+          cart_parse[i]["image"], 
+          cart_parse[i]["name"], 
+          cart_parse[i]["price"]);
+        
         document.getElementById("shopping-cart").appendChild(item_elem);
+        
+        var x = document.getElementById("total-price");
+        var r = parseFloat((
+                  parseFloat(x.textContent) + 
+                  parseFloat(cart_parse[i]["price"]
+                  ) * cart_parse[i]["qty"])).toFixed(2);
+        x.textContent = r;
       }      
     } catch (error) {
       console.log(error);
     }
   }
-
-  function incrementCart(ev){
-
-  }
-
-  function decrementCart(ev){
-
-  }
-
-  function getProducts(success, failure){
-
-  }
-
-  function showProducts(products){
-
-  }
-
-  function addItem(ev){
-
-  }
-
-
 </script>
 
 </body>
