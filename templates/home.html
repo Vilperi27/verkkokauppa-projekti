@@ -43,13 +43,13 @@
       -->
 	{% for prod in product %}  
       <tr>
-        <td>{{prod.product_id}}</td>
+        <td>{{prod.id}}</td>
         <td>{{prod.product_name}}</td>
         <td>{{prod.product_description}}</td>
         <td><img src={{prod.product_image}} alt="Italian Trulli" width="150px" height="150px"></td>
         <td>{{prod.product_price}}€</td>
         <td><button type="button" onclick="CART.add(
-          prod_id = '{{ prod.product_id }}', 
+          prod_id = '{{ prod.id }}', 
           prod_name = '{{ prod.product_name }}', 
           prod_image = '{{ prod.product_image }}',
           prod_price = '{{ prod.product_price }}')">Lisää ostoskoriin</button>
@@ -150,17 +150,23 @@
         document.getElementById("shopping-cart-empty").appendChild(button_elem);
       }
 
+
+
       //Creating the "item"-element which contains all the images, names, id etc.
       //This is named by the ID to easily keep track of each item element.
       var div_elem = document.createElement("div");
       div_elem.setAttribute("id", prod_id);
       document.getElementById("shopping-cart").append(div_elem);
 
+
+
       //Image for the item
       var image = document.createElement("img");
       image.style = "width: 50px; height: 50px;";
       image.src = prod_image;
       document.getElementById(prod_id).appendChild(image);
+
+
 
       //Quantity paragraph for the item
       var qty_elem = document.createElement("p");
@@ -169,6 +175,8 @@
       qty_elem.textContent = qty;
       qty_elem.style = "display: inline;"
       document.getElementById(prod_id).appendChild(qty_elem);
+
+
 
       var name_elem = document.createElement("p");
 
@@ -183,10 +191,14 @@
       name_elem.style = "display: inline; overflow: hidden;"
       document.getElementById(prod_id).appendChild(name_elem);
 
+
+
       //Paragraph to show individual price and product ID
       var id_elem = document.createElement("p");
       id_elem.textContent = prod_price + "€ / kpl  |  Tuotekoodi: " + prod_id;
       document.getElementById(prod_id).appendChild(id_elem);
+
+
 
       //Button to reduce the amount of products.
       var button_minus = document.createElement("button");
@@ -195,12 +207,16 @@
       button_minus.style = "margin-right: 5px";
       document.getElementById(prod_id).appendChild(button_minus);
 
+
+      
       //Button to increase the amount of products.
       var button_plus = document.createElement("button");
       button_plus.setAttribute("onclick", "CART.increase("+prod_id+", "+1+")");
       button_plus.textContent = "+";
       button_plus.style = "margin-left: 5px";
       document.getElementById(prod_id).appendChild(button_plus);
+
+
 
       return div_elem;
     },
@@ -246,7 +262,6 @@
       //cart and also removes the visual element from the shopping cart
       CART.contents.forEach(async item=>{
         if(item.id == id && item.qty == 0){
-          console.log("here");
           CART.remove(id);
           document.getElementById(id).remove();
           
@@ -306,8 +321,7 @@
         var x = document.getElementById("total-price");
         var r = parseFloat((
                   parseFloat(x.textContent) + 
-                  parseFloat(cart_parse[i]["price"]
-                  ) * cart_parse[i]["qty"])).toFixed(2);
+                  parseFloat(cart_parse[i]["price"]) * cart_parse[i]["qty"])).toFixed(2);
         x.textContent = r;
       }      
     } catch (error) {
